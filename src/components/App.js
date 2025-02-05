@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import BpmnJS from "bpmn-js"; // BPMN rendering library
+import BpmnJS from "bpmn-js";
 
 const BpmnViewer = () => {
   const containerRef = useRef(null);
@@ -13,7 +13,7 @@ const BpmnViewer = () => {
       bpmnViewer.current
         .importXML(bpmnXML)
         .then(() => {
-          //  Auto-fit BPMN diagram on load
+          // Auto-fit BPMN diagram on load
           bpmnViewer.current.get("canvas").zoom("fit-viewport");
         })
         .catch((err) => {
@@ -21,7 +21,25 @@ const BpmnViewer = () => {
         });
     }
 
+    // Add event listener for zooming with Ctrl + Mouse Scroll
+    const handleWheelZoom = (event) => {
+      if (event.ctrlKey) {
+        event.preventDefault(); // Prevent default zooming behavior
+        const canvas = bpmnViewer.current.get("canvas");
+        const zoomFactor = event.deltaY < 0 ? 1.1 : 0.9; // Scroll up to zoom in, down to zoom out
+        canvas.zoom(canvas.zoom() * zoomFactor);
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener("wheel", handleWheelZoom);
+    }
+
     return () => {
+      if (container) {
+        container.removeEventListener("wheel", handleWheelZoom);
+      }
       bpmnViewer.current.destroy();
     };
   }, [bpmnXML]);
@@ -35,23 +53,18 @@ const BpmnViewer = () => {
     }
   };
 
-  // Zoom Functions
-  const zoomIn = () => {
-    bpmnViewer.current.get("canvas").zoom(bpmnViewer.current.get("canvas").zoom() * 1.2);
-  };
-
-  const zoomOut = () => {
-    bpmnViewer.current.get("canvas").zoom(bpmnViewer.current.get("canvas").zoom() * 0.8);
-  };
-
   return (
     <div style={{ textAlign: "center", padding: "20px" }}>
       <input type="file" accept=".bpmn" onChange={handleFileUpload} />
-      <div style={{ margin: "10px 0" }}>
-        <button onClick={zoomIn} style={{ marginRight: "10px" }}>Zoom In</button>
-        <button onClick={zoomOut}>Zoom Out</button>
-      </div>
-      <div ref={containerRef} style={{ width: "100%", height: "500px", border: "1px solid #ccc" }}></div>
+      <div
+        ref={containerRef}
+        style={{
+          width: "100%",
+          height: "500px",
+          border: "1px solid #ccc",
+          marginTop: "10px",
+        }}
+      ></div>
     </div>
   );
 };
