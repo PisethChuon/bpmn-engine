@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import BpmnJS from "bpmn-js";
+import BpmnJS from "bpmn-js"; // BPMN rendering library
 
 const BpmnViewer = () => {
   const containerRef = useRef(null);
